@@ -1,6 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 
+import { Icon } from 'semantic-ui-react';
+
 const mapStateToProps = state => {
 	return {
 		isAuthenticated: state.home.isAuthenticated
@@ -15,7 +17,10 @@ class Home extends React.Component {
     
   render() {
     return (
-      <div>Welcome</div>
+      <div>
+        <Icon name='home' size='large' />
+        Welcome
+      </div>
     );
   }
 }

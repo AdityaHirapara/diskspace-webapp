@@ -6,6 +6,7 @@ import { getHomeUrl } from './components/home/urls';
 import Home from './components/home';
 
 import { createBrowserHistory } from 'history';
+import 'semantic-ui-css/semantic.min.css';
 import './App.css';
 
 const queryString = require('query-string');
