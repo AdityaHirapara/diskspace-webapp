@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom'
 
 import { Icon } from 'semantic-ui-react';
 
@@ -26,6 +27,11 @@ class Home extends React.Component {
     
   render() {
     const { signin } = this.state;
+
+    if (this.props.isAuthenticated) {
+      return <Redirect to={'/dashboard'}/>
+    }
+
     return (
       <div>
         <Header />

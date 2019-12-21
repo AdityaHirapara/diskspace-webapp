@@ -14,6 +14,8 @@ import {
 } from 'semantic-ui-react';
 import Dropzone from 'react-dropzone';
 import fixRotation from 'fix-image-rotation';
+import firebase from '../../firebase';
+import axios from 'axios';
 
 import NavBar from '../common/header';
 import {
@@ -27,26 +29,39 @@ const mapStateToProps = state => {
 	return {
     isAuthenticated: state.home.isAuthenticated,
     profile: state.home.details.profile,
-    images: state.dashboard.images
 	};
 };
 
 const mapDispatchToProps = dispatch => {
 	return {
-    loadImages: (email) => dispatch(loadImages(email)),
     uploadImage: (email, image) => dispatch(uploadImage(email, image))
 	};
 };
 
 @connect(mapStateToProps, mapDispatchToProps)
 class Dashboard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.aref = React.createRef();
+  }
+
 	state = {
     open: false,
-    acceptedFiles: []
+    acceptedFiles: [],
+    images: [],
+    zoom:false,
+    image: ''
   };
 
   componentDidMount() {
-    this.props.loadImages(this.props.profile.email)
+    const { email } = this.props.profile;
+    const { images } = this.state;
+    var ref = firebase.database().ref("All_Image_Uploads_Database");
+    ref.orderByChild("imageName").equalTo(email).on("child_added", (snapshot) => {
+      console.log(snapshot.val());
+      images.push({...snapshot.val(), key: snapshot.key});
+      this.setState({ images });
+    });
   }
 
   show = () => {
@@ -81,19 +96,58 @@ class Dashboard extends React.Component {
     const file = this.state.acceptedFiles[0];
     let reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = function () {
+    reader.onload = () => {
       console.log(reader.result)
       let img = reader.result.split(',')[1];
-      uploadImage(profile.email, img);
+      uploadImage(profile.email, img, this.updateImages.bind(this));
     };
-    reader.onerror = function (error) {
+    reader.onerror = (error) => {
       console.log('Error: ', error);
     };
   }
 
+  updateImages = (image) => {
+    const { images } = this.state;
+    images.push(image);
+    this.setState({ images });
+  }
+
+  zoomIn = (image) => {
+    this.setState({ zoom: true, image });
+  }
+
+  zoomOut = () => {
+    this.setState({ zoom: false, image: {} });
+  }
+
+  downloadImage = () => {
+    axios
+      .post('http://169c8f5e.ngrok.io/js', { "key1": this.state.image.imageURL })
+      .then(res => {
+        console.log(res.data)
+        this.setState({extracted: res.data});
+        this.aref.current.click();
+        this.zoomOut();
+      })
+  }
+
+  deleteImage = () => {
+    const { image, images } = this.state;
+    firebase.database().ref("All_Image_Uploads_Database/" + image.key).remove()
+      .then(() => {
+        let i = images.find(i => i.key === image.key);
+        images.splice(i, 1);
+        this.setState({images});
+        this.zoomOut();
+      })
+      .catch(e => {
+        console.log(e);
+      })
+  }
+
   render() {
-    const { profile, images } = this.props;
-    const { open, acceptedFiles } = this.state;
+    const { profile } = this.props;
+    const { open, acceptedFiles, images, zoom, image } = this.state;
 
     return (
       <div>
@@ -109,7 +163,7 @@ class Dashboard extends React.Component {
               vertical
               visible={true}
               width='thin'
-              style={{position: 'relative', display: 'inline-table', width: '13%'}}
+              style={{position: 'relative', display: 'inline-table', width: '13%', zIndex: 0}}
             >
               <Menu.Item as='a' active>
                 <Icon name='home' />
@@ -128,12 +182,36 @@ class Dashboard extends React.Component {
                   {!!images.length && 
                     images.map(i =>
                       <Grid.Column>
-                        <Image src={`data:image/jpeg;base64,${i.imageURL}`} onClick={() => this.zoomIn(i.imageURL)}/>
+                        <Image src={`data:image/png;base64,${i.imageURL}`} onClick={() => this.zoomIn(i)}/>
                       </Grid.Column>
                     )
                   }
                 </Grid>
               </Segment>
+              <a ref={this.aref} href={this.state.extracted} style={{display: 'none'}} download > </a>
+              <Modal size={'fullscreen'} closeIcon={<Icon name="close" style={{color: '#fff', top: '-10px'}}/>} open={zoom} onClose={this.zoomOut} style={{background: 'transparent', boxShadow: 'none'}}>
+                <Modal.Content style={{background: 'transparent'}}>
+                  <div className={styles.preview}>
+                    <Image src={`data:image/png;base64,${image.imageURL}`} style={{maxWidth: '100%', maxHeight: '70vh'}}/>
+                  </div>
+                </Modal.Content>
+                <Modal.Actions style={{background: 'transparent'}}>
+                  <Button
+                    negative
+                    icon='delete'
+                    labelPosition='right'
+                    content='Delete'
+                    onClick={this.deleteImage}
+                  />
+                  <Button
+                    positive
+                    icon='download'
+                    labelPosition='right'
+                    content='Download'
+                    onClick={this.downloadImage}
+                  />
+                </Modal.Actions>
+              </Modal>
             </Sidebar.Pusher>
           </Sidebar.Pushable>
           <Modal size={'small'} open={open} onClose={this.close}>
