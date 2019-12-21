@@ -6,14 +6,16 @@ import {
   Menu,
 } from 'semantic-ui-react';
 
+import logo from 'src/images/logo.png';
+
 export default class header extends React.Component {
   
   render() {
     return (
       <div>
-        <Menu fixed='top' inverted>
+        <Menu fixed='top' inverted style={{height: '10vh'}}>
             <Menu.Item as='a' header>
-              <Image size='mini' src={'logo.png'} style={{ marginRight: '1.5em' }} />
+              <Image size='mini' src={logo} style={{ marginRight: '1.5em' }} />
               DiskSpace
             </Menu.Item>
             {/* <Menu.Item as='a'>Home</Menu.Item> */}

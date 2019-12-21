@@ -4,6 +4,10 @@ import { connect } from 'react-redux';
 
 import { getHomeUrl } from './components/home/urls';
 import Home from './components/home';
+import { getDashboardUrl } from './components/dashboard/urls';
+import Dashboard from './components/dashboard';
+
+import ProtectedRoute from './protectedRoute';
 
 import { createBrowserHistory } from 'history';
 import 'semantic-ui-css/semantic.min.css';
@@ -29,6 +33,12 @@ class App extends Component {
 						exact
 						path={getHomeUrl()}
 						component={Home}
+						history={history}
+					/>
+          <ProtectedRoute
+						exact
+						path={getDashboardUrl()}
+						component={Dashboard}
 						history={history}
 					/>
         </Switch>

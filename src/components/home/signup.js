@@ -14,6 +14,7 @@ import {
 import {
   signup
 } from './actions';
+import logo from 'src/images/logo.png';
 
 const mapStateToProps = state => {
 	return {
@@ -71,7 +72,7 @@ class SignUp extends React.Component {
       <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
         <Grid.Column style={{ maxWidth: 450 }}>
           <Header as='h2' color='teal' textAlign='center'>
-            <Image src='/src/images/logo.png' /> Create account
+            <Image src={logo} /> Create account
           </Header>
           <Form size='large'>
             <Segment stacked>

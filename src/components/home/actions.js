@@ -13,7 +13,7 @@ export const login = (creds, callback) => {
   return dispatch => {
     return firebase.auth().signInWithEmailAndPassword(email, password)
     .then((user) => {
-      dispatch({ type: ActionType.LOG_IN, payload: creds });
+      dispatch({ type: ActionType.LOG_IN, payload: {email} });
       callback(true);
     })
     .catch(error => {
@@ -29,7 +29,7 @@ export const signup = (creds, callback) => {
   return dispatch => {
     return firebase.auth().createUserWithEmailAndPassword(email, password)
     .then((user) => {
-      dispatch({ type: ActionType.LOG_IN, payload: creds });
+      dispatch({ type: ActionType.LOG_IN, payload: {email} });
       callback(true);
     })
     .catch(error => {

@@ -30,8 +30,8 @@ class Home extends React.Component {
       <div>
         <Header />
         {signin? 
-          <SignIn onSignup={this.toggleSignin} />:
-          <SignUp onSignin={this.toggleSignin}/>
+          <SignIn onSignup={this.toggleSignin} history={this.props.history}/>:
+          <SignUp onSignin={this.toggleSignin} history={this.props.history}/>
         }
       </div>
     );

@@ -11,10 +11,10 @@ import {
   Segment
 } from 'semantic-ui-react';
 
-import firebase from '../../firebase';
 import {
   login
 } from './actions';
+import logo from 'src/images/logo.png';
 
 const mapStateToProps = state => {
 	return {
@@ -46,9 +46,10 @@ class SignIn extends React.Component {
 
   login = () => {
     const { email, password } = this.state;
+    const { history } = this.props;
     this.props.login({ email, password }, (success) => {
       if (success) {
-        alert('success')
+        history.push('/dashboard');
       } else {
         alert('Invalid credentials')
       }
@@ -62,7 +63,7 @@ class SignIn extends React.Component {
       <Grid textAlign='center' style={{ height: '100vh' }} verticalAlign='middle'>
         <Grid.Column style={{ maxWidth: 450 }}>
           <Header as='h2' color='teal' textAlign='center'>
-            <Image src='/src/images/logo.png' /> Log-in to your account
+            <Image src={logo} /> Log-in to your account
           </Header>
           <Form size='large'>
             <Segment stacked>

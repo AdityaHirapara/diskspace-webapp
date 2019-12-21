@@ -1,7 +1,7 @@
 import { ActionType } from './actions'
 
 const initialState = {
-  isAuthenticated: 'checking',
+  isAuthenticated: false,
   details: {
     loaded: true,
     profile: {}
