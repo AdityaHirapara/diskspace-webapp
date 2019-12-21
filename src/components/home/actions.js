@@ -2,9 +2,8 @@ import keymirror from 'keymirror'
 import firebase from '../../firebase';
 
 export const ActionType = keymirror({
-  LOGIN_CHANGES: null,
-  LOGIN_STATUS: null,
   LOG_IN: null,
+  LOG_OUT: null,
 });
 
 export const login = (creds, callback) => {
@@ -44,5 +43,13 @@ export const signup = (creds, callback) => {
       }
       console.log(error);
     });
+  }
+}
+
+export const logout = (callback) => {
+
+  return dispatch => {
+    dispatch({ type: ActionType.LOG_OUT });
+    callback();
   }
 }

@@ -21,6 +21,17 @@ export function HomeReducer (state = initialState, action) {
       }
     }
 
+    case ActionType.LOG_OUT: {
+      return {
+        ...state,
+        isAuthenticated: false,
+        details: {
+          loaded: true,
+          profile: {}
+        }
+      }
+    }
+
     default: {
       return state
     }

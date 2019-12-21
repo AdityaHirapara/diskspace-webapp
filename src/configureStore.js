@@ -1,5 +1,7 @@
 import thunk from 'redux-thunk'
 import { createStore, applyMiddleware, compose } from 'redux'
+import { persistStore, persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 
 import reducers from './reducers'
 
@@ -15,8 +17,14 @@ const configureStore = () => {
     applyMiddleware(thunk)
     // other store enhancers if any
   )
-  const store = createStore(reducers, enhancer)
-
+  const persistConfig = {
+    key: 'root',
+    storage,
+  }
+   
+  const persistedReducer = persistReducer(persistConfig, reducers)
+  const store = createStore(persistedReducer, enhancer)
+  const persistor = persistStore(store)
   // const store = createStore(reducers, applyMiddleware(thunk))
 
   if (process.env.NODE_ENV !== 'production') {
@@ -27,7 +35,7 @@ const configureStore = () => {
     }
   }
 
-  return store
+  return { store, persistor }
 }
 
 export default configureStore

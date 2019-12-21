@@ -19,10 +19,11 @@ import axios from 'axios';
 
 import NavBar from '../common/header';
 import {
-  loadImages,
   uploadImage
 } from './actions';
-
+import {
+  logout
+} from '../home/actions';
 import styles from './dashboard.module.css';
 
 const mapStateToProps = state => {
@@ -34,7 +35,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
 	return {
-    uploadImage: (email, image) => dispatch(uploadImage(email, image))
+    uploadImage: (email, image) => dispatch(uploadImage(email, image)),
+    logout: (callback) => dispatch(logout(callback)),
 	};
 };
 
@@ -145,6 +147,12 @@ class Dashboard extends React.Component {
       })
   }
 
+  logout = () => {
+    this.props.logout(() => {
+      this.props.history.push('/');
+    })
+  }
+
   render() {
     const { profile } = this.props;
     const { open, acceptedFiles, images, zoom, image } = this.state;
@@ -172,6 +180,10 @@ class Dashboard extends React.Component {
               <Menu.Item as='a' onClick={this.show}>
                 <Icon name='upload' />
                 Upload
+              </Menu.Item>
+              <Menu.Item as='a' onClick={this.logout}>
+                <Icon name='sign-out' />
+                Logout
               </Menu.Item>
             </Sidebar>
 
