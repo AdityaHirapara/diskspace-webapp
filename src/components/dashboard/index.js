@@ -35,7 +35,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => {
 	return {
-    uploadImage: (email, image) => dispatch(uploadImage(email, image)),
+    uploadImage: (email, image, callback) => dispatch(uploadImage(email, image, callback)),
     logout: (callback) => dispatch(logout(callback)),
 	};
 };
@@ -60,7 +60,6 @@ class Dashboard extends React.Component {
     const { images } = this.state;
     var ref = firebase.database().ref("All_Image_Uploads_Database");
     ref.orderByChild("imageName").equalTo(email).on("child_added", (snapshot) => {
-      console.log(snapshot.val());
       images.push({...snapshot.val(), key: snapshot.key});
       this.setState({ images });
     });
@@ -75,7 +74,6 @@ class Dashboard extends React.Component {
   }
 
   dropFile = acceptedFiles => {
-    console.log(acceptedFiles)
     fixRotation.fixRotation(acceptedFiles)
 			.then((arr) => {
 				this.setState({
@@ -93,25 +91,22 @@ class Dashboard extends React.Component {
     this.setState({acceptedFiles: []});
   }
 
+  updateImages = () => {
+    this.close()
+  }
+
   submitImage = () => {
     const { profile, uploadImage } = this.props;
     const file = this.state.acceptedFiles[0];
     let reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => {
-      console.log(reader.result)
       let img = reader.result.split(',')[1];
-      uploadImage(profile.email, img, this.updateImages.bind(this));
+      uploadImage(profile.email, img, this.updateImages);
     };
     reader.onerror = (error) => {
       console.log('Error: ', error);
     };
-  }
-
-  updateImages = (image) => {
-    const { images } = this.state;
-    images.push(image);
-    this.setState({ images });
   }
 
   zoomIn = (image) => {
@@ -124,13 +119,34 @@ class Dashboard extends React.Component {
 
   downloadImage = () => {
     axios
-      .post('http://169c8f5e.ngrok.io/js', { "key1": this.state.image.imageURL })
+      .post('http://36df45ae.ngrok.io/js', { "key1": this.state.image.imageURL })
       .then(res => {
         console.log(res.data)
-        this.setState({extracted: res.data});
+        const blob = this.b64toBlob(res.data, 'image/png')
+        this.setState({extracted: URL.createObjectURL(blob)});
         this.aref.current.click();
         this.zoomOut();
       })
+  }
+
+  b64toBlob = (b64Data, contentType='', sliceSize=512) => {
+    const byteCharacters = atob(b64Data);
+    const byteArrays = [];
+  
+    for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      const slice = byteCharacters.slice(offset, offset + sliceSize);
+  
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+  
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
+    }
+  
+    const blob = new Blob(byteArrays, {type: contentType});
+    return blob;
   }
 
   deleteImage = () => {
@@ -232,7 +248,7 @@ class Dashboard extends React.Component {
               {/* <p>Are you sure you want to delete your account</p> */}
               
               {!acceptedFiles.length ?
-                <Dropzone  accept={['image/jpeg', 'image/jpg']} onDrop={this.dropFile}>
+                <Dropzone  accept={['image/jpeg', 'image/jpg', 'image/png']} onDrop={this.dropFile}>
                 {({getRootProps, getInputProps}) => (
                   <section>
                     <div {...getRootProps()} className={styles.dropzone}>

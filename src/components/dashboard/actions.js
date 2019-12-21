@@ -9,15 +9,14 @@ export const ActionType = keymirror({
 export const uploadImage = (email, image, callback) => {
   return dispatch => {
     return axios
-      .post('http://169c8f5e.ngrok.io/jj', { "key1": image })
+      .post('http://36df45ae.ngrok.io/jj', { "key1": image })
       .then(res => {
-        console.log(res.data)
-        firebase.database().ref("All_Image_Uploads_Database").set({
+        firebase.database().ref("All_Image_Uploads_Database/").push({
           imageName: email,
           imageURL: image
         })
           .then(() => {
-            callback(image);
+            callback();
           })
           .catch(error => {
             console.log(error);
