@@ -3,6 +3,10 @@ import { connect } from 'react-redux';
 
 import { Icon } from 'semantic-ui-react';
 
+import Header from '../common/header';
+import SignIn from './signin';
+import SignUp from './signup';
+
 const mapStateToProps = state => {
 	return {
 		isAuthenticated: state.home.isAuthenticated
@@ -12,14 +16,23 @@ const mapStateToProps = state => {
 @connect(mapStateToProps)
 class Home extends React.Component {
 	state = {
-		role: 'candidate'
+		signin: true
   };
+
+  toggleSignin = () => {
+    const { signin } = this.state;
+    this.setState({ signin: !signin });
+  }
     
   render() {
+    const { signin } = this.state;
     return (
       <div>
-        <Icon name='home' size='large' />
-        Welcome
+        <Header />
+        {signin? 
+          <SignIn onSignup={this.toggleSignin} />:
+          <SignUp onSignin={this.toggleSignin}/>
+        }
       </div>
     );
   }

@@ -4,10 +4,7 @@ const initialState = {
   isAuthenticated: 'checking',
   details: {
     loaded: true,
-    profile: {
-      loggedIn: false,
-      user: {}
-    }
+    profile: {}
   }
 }
 
