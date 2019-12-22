@@ -16,7 +16,7 @@ export default class header extends React.Component {
         <Menu fixed='top' inverted style={{height: '10vh'}}>
             <Menu.Item as='a' header>
               <Image size='mini' src={logo} style={{ marginRight: '1.5em' }} />
-              DiskSpace
+              <span style={{fontSize: 22, letterSpacing: 0.5}}>DiskSpace</span>
             </Menu.Item>
             {/* <Menu.Item as='a'>Home</Menu.Item> */}
         </Menu>

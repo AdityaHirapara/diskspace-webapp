@@ -16,6 +16,7 @@ import Dropzone from 'react-dropzone';
 import fixRotation from 'fix-image-rotation';
 import firebase from '../../firebase';
 import axios from 'axios';
+import MediaQuery from 'react-responsive';
 
 import NavBar from '../common/header';
 import {
@@ -52,7 +53,9 @@ class Dashboard extends React.Component {
     acceptedFiles: [],
     images: [],
     zoom:false,
-    image: ''
+    image: '',
+    uploading: false,
+    downloading: false
   };
 
   componentDidMount() {
@@ -91,22 +94,30 @@ class Dashboard extends React.Component {
     this.setState({acceptedFiles: []});
   }
 
-  updateImages = () => {
-    this.close()
+  updateImages = (status) => {
+    if (status) {
+      this.close();
+    } else {
+      alert("Sorry for trouble! We are trying to improve :)");
+    }
+    this.setState({ uploading: false, acceptedFiles: [] });
   }
 
   submitImage = () => {
-    const { profile, uploadImage } = this.props;
-    const file = this.state.acceptedFiles[0];
-    let reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      let img = reader.result.split(',')[1];
-      uploadImage(profile.email, img, this.updateImages);
-    };
-    reader.onerror = (error) => {
-      console.log('Error: ', error);
-    };
+    if (this.state.acceptedFiles.length) {
+      const { profile, uploadImage } = this.props;
+      const file = this.state.acceptedFiles[0];
+      let reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        let img = reader.result.split(',')[1];
+        this.setState({ uploading: true });
+        uploadImage(profile.email, img, this.updateImages);
+      };
+      reader.onerror = (error) => {
+        console.log('Error: ', error);
+      };
+    }
   }
 
   zoomIn = (image) => {
@@ -118,15 +129,32 @@ class Dashboard extends React.Component {
   }
 
   downloadImage = () => {
+    this.setState({ downloading: true });
     axios
-      .post('http://36df45ae.ngrok.io/js', { "key1": this.state.image.imageURL })
+      .post('http://14c4f188.ngrok.io/js', { "key1": this.state.image.imageURL })
       .then(res => {
-        console.log(res.data)
         const blob = this.b64toBlob(res.data, 'image/png')
         this.setState({extracted: URL.createObjectURL(blob)});
+        console.log(blob)
         this.aref.current.click();
         this.zoomOut();
+        this.setState({ downloading: false });
       })
+      .catch(e => {
+        console.log(e);
+        this.setState({ downloading: false });
+        alert('Sorry for trouble! We are trying to improve :)');
+      })
+  }
+
+  downloadCompressedImage = () => {
+    const blob = this.b64toBlob(this.state.image.imageURL, 'image/png')
+    console.log(blob)
+    this.setState({extracted: URL.createObjectURL(blob)}, () => {
+      this.aref.current.click();
+    });
+    
+    // this.zoomOut();
   }
 
   b64toBlob = (b64Data, contentType='', sliceSize=512) => {
@@ -153,7 +181,7 @@ class Dashboard extends React.Component {
     const { image, images } = this.state;
     firebase.database().ref("All_Image_Uploads_Database/" + image.key).remove()
       .then(() => {
-        let i = images.find(i => i.key === image.key);
+        let i = images.findIndex(i => i.key === image.key);
         images.splice(i, 1);
         this.setState({images});
         this.zoomOut();
@@ -171,8 +199,9 @@ class Dashboard extends React.Component {
 
   render() {
     const { profile } = this.props;
-    const { open, acceptedFiles, images, zoom, image } = this.state;
+    const { open, acceptedFiles, images, zoom, image, uploading, downloading } = this.state;
 
+    const storage = images.reduce((acc, curr) => acc + curr.size, 0);
     return (
       <div>
         <NavBar />
@@ -201,23 +230,51 @@ class Dashboard extends React.Component {
                 <Icon name='sign-out' />
                 Logout
               </Menu.Item>
+
+              <Menu.Item style={{position: 'absolute', bottom: 0, width: '100%'}}>
+                <Icon color="teal" name='database'/>
+                <div style={{marginTop: 15, fontSize: 16}}>{(storage/1000).toFixed(2)}MB Used</div>
+              </Menu.Item>
             </Sidebar>
 
             <Sidebar.Pusher dimmed={false} style={{width: '87%'}}>
               <Segment basic>
-                {/* <Header as='h3'>Application Content</Header> */}
-                <Grid relaxed columns={4}>
-                  {!!images.length && 
-                    images.map(i =>
-                      <Grid.Column>
-                        <Image src={`data:image/png;base64,${i.imageURL}`} onClick={() => this.zoomIn(i)}/>
-                      </Grid.Column>
-                    )
-                  }
-                </Grid>
+                <MediaQuery query="(min-width: 950px)">
+                  <Grid relaxed columns={5}>
+                    {!!images.length && 
+                      images.map(i =>
+                        <Grid.Column>
+                          <Image src={`data:image/png;base64,${i.imageURL}`} onClick={() => this.zoomIn(i)}/>
+                        </Grid.Column>
+                      )
+                    }
+                  </Grid>
+                </MediaQuery>
+                <MediaQuery query="(min-width: 786px) and ( max-width: 949px)">
+                  <Grid relaxed columns={4}>
+                    {!!images.length && 
+                      images.map(i =>
+                        <Grid.Column>
+                          <Image src={`data:image/png;base64,${i.imageURL}`} onClick={() => this.zoomIn(i)}/>
+                        </Grid.Column>
+                      )
+                    }
+                  </Grid>
+                </MediaQuery>
+                <MediaQuery query="(max-width: 785px)">
+                  <Grid relaxed columns={2}>
+                    {!!images.length && 
+                      images.map(i =>
+                        <Grid.Column>
+                          <Image src={`data:image/png;base64,${i.imageURL}`} onClick={() => this.zoomIn(i)}/>
+                        </Grid.Column>
+                      )
+                    }
+                  </Grid>
+                </MediaQuery>
               </Segment>
-              <a ref={this.aref} href={this.state.extracted} style={{display: 'none'}} download > </a>
-              <Modal size={'fullscreen'} closeIcon={<Icon name="close" style={{color: '#fff', top: '-10px'}}/>} open={zoom} onClose={this.zoomOut} style={{background: 'transparent', boxShadow: 'none'}}>
+              <a ref={this.aref} href={this.state.extracted} style={{display: 'none'}} download> </a>
+              <Modal size={'large'} closeIcon={<Icon name="close" style={{color: '#fff', top: '-10px'}}/>} open={zoom} onClose={this.zoomOut} style={{background: 'transparent', boxShadow: 'none'}}>
                 <Modal.Content style={{background: 'transparent'}}>
                   <div className={styles.preview}>
                     <Image src={`data:image/png;base64,${image.imageURL}`} style={{maxWidth: '100%', maxHeight: '70vh'}}/>
@@ -226,17 +283,25 @@ class Dashboard extends React.Component {
                 <Modal.Actions style={{background: 'transparent'}}>
                   <Button
                     negative
-                    icon='delete'
+                    icon='trash'
                     labelPosition='right'
                     content='Delete'
                     onClick={this.deleteImage}
                   />
                   <Button
+                    loading={downloading}
                     positive
                     icon='download'
                     labelPosition='right'
                     content='Download'
                     onClick={this.downloadImage}
+                  />
+                  <Button
+                    positive
+                    icon='download'
+                    labelPosition='right'
+                    content='Compressed'
+                    onClick={this.downloadCompressedImage}
                   />
                 </Modal.Actions>
               </Modal>
@@ -269,6 +334,7 @@ class Dashboard extends React.Component {
               <Button negative onClick={() => {this.resetFile(); this.close()}}>Cancel</Button>
               <Button
                 positive
+                loading={uploading}
                 icon='plus'
                 labelPosition='right'
                 content='Upload'

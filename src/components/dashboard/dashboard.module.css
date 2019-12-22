@@ -7,10 +7,10 @@
   font-size: 18px;
   border-width: 2px;
   border-radius: 2px;
-  border-color: #eeeeee;
+  border-color: #c7c3c3;
   border-style: dashed;
-  background-color: #fafafa;
-  color: #bdbdbd;
+  background-color: #eeeeee;
+  color: #a3a3a3;
   outline: none;
   transition: border .24s ease-in-out;
 }
@@ -23,8 +23,8 @@
 .close {
   font-size: 1em;
   position: relative;
-  top: -30px;
-  background: #f38072;
+  top: -27px;
+  background: #dc3e29;
   color: white;
   cursor: pointer;
 }
