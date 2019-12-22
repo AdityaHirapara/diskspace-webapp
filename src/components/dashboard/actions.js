@@ -9,7 +9,7 @@ export const ActionType = keymirror({
 export const uploadImage = (email, image, callback) => {
   return dispatch => {
     return axios
-      .post('http://91584517.ngrok.io/jj', { "key1": image })
+      .post('http://811035a1.ngrok.io/jj', { "key1": image })
       .then(res => {
         function calculateImageSize(base64String){
           let padding, inBytes, kbytes, base64StringLength;

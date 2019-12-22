@@ -131,7 +131,7 @@ class Dashboard extends React.Component {
   downloadImage = () => {
     this.setState({ downloading: true });
     axios
-      .post('http://91584517.ngrok.io/js', { "key1": this.state.image.imageURL })
+      .post('http://811035a1.ngrok.io/js', { "key1": this.state.image.imageURL })
       .then(res => {
         const blob = this.b64toBlob(res.data, 'image/png')
         this.setState({extracted: URL.createObjectURL(blob)});
